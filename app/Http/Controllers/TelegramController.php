@@ -19,14 +19,13 @@ class TelegramController extends Controller
 
     public function handle(Request $request)
     {
-      // Processing buttons
+
       Telegram::on('callback_query.text', function (UpdateEvent $event) {
           $action = AbstractQuery::match($event->update->callbackQuery->data);
 
           if ($action) {
               $action = new $action();
               $action->handle($event);
-
               return null;
           }
 
@@ -56,7 +55,6 @@ class TelegramController extends Controller
             );
 
             //$order = Order::where('client_id', $id)->first();
-
             if (is_numeric($text)) {
               Telegram::sendMessage([
                   'chat_id' => $id,
@@ -68,26 +66,8 @@ class TelegramController extends Controller
                   'chat_id' => $id,
                   'text' => 'Введите число!',
               ]);
-
             }
         }
-    }
-
-    /**
-     * http://card_bot.test/set-webhook/url
-     *
-     */
-    public function setwebhook($url)
-    {
-      echo $url;
-      if (!$url) {
-          echo 'no url';
-          return;
-      }
-      $response = Telegram::setWebhook([
-          'url' => 'https://' . $url . '/' . env('TELEGRAM_BOT_TOKEN') . '/webhook',
-      ]);
-      return $response;
     }
 
     /**
@@ -106,4 +86,18 @@ class TelegramController extends Controller
         ], JSON_THROW_ON_ERROR);
     }
 
+    /*
+    public function setwebhook($url)
+    {
+      echo $url;
+      if (!$url) {
+          echo 'no url';
+          return;
+      }
+      $response = Telegram::setWebhook([
+          'url' => 'https://' . $url . '/' . env('TELEGRAM_BOT_TOKEN') . '/webhook',
+      ]);
+      return $response;
+    }
+    */
 }
