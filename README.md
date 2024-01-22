@@ -18,3 +18,10 @@ run migrations
 php artisan migrate
 
 setWebhook
+
+## Web admin
+
+url: /admin/
+
+register user
+env BACKPACK_REGISTRATION_OPEN=true
