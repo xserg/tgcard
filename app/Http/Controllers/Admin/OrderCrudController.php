@@ -21,7 +21,7 @@ class OrderCrudController extends CrudController
 
     /**
      * Configure the CrudPanel object. Apply settings to all operations.
-     * 
+     *
      * @return void
      */
     public function setup()
@@ -33,13 +33,14 @@ class OrderCrudController extends CrudController
 
     /**
      * Define what happens when the List operation is loaded.
-     * 
+     *
      * @see  https://backpackforlaravel.com/docs/crud-operation-list-entries
      * @return void
      */
     protected function setupListOperation()
     {
-        CRUD::setFromDb(); // set columns from db columns.
+        CRUD::setFromDb();
+        CRUD::denyAccess('create'); // set columns from db columns.
 
         /**
          * Columns can be defined using the fluent syntax:
@@ -49,13 +50,18 @@ class OrderCrudController extends CrudController
 
     /**
      * Define what happens when the Create operation is loaded.
-     * 
+     *
      * @see https://backpackforlaravel.com/docs/crud-operation-create
      * @return void
      */
     protected function setupCreateOperation()
     {
-        CRUD::setValidation(OrderRequest::class);
+        CRUD::setValidation([
+          'client_id' => 'required',
+          'sum' => 'required',
+          'sum_discount' => 'required',
+          'payment_type' => 'required'
+        ]);
         CRUD::setFromDb(); // set fields from db columns.
 
         /**
@@ -66,7 +72,7 @@ class OrderCrudController extends CrudController
 
     /**
      * Define what happens when the Update operation is loaded.
-     * 
+     *
      * @see https://backpackforlaravel.com/docs/crud-operation-update
      * @return void
      */
