@@ -86,18 +86,4 @@ class TelegramController extends Controller
         ], JSON_THROW_ON_ERROR);
     }
 
-    /*
-    public function setwebhook($url)
-    {
-      echo $url;
-      if (!$url) {
-          echo 'no url';
-          return;
-      }
-      $response = Telegram::setWebhook([
-          'url' => 'https://' . $url . '/' . env('TELEGRAM_BOT_TOKEN') . '/webhook',
-      ]);
-      return $response;
-    }
-    */
 }

@@ -25,7 +25,6 @@ class TypeQuery extends AbstractQuery
         $client_id = $event->update->getChat()->id;
 
         $order = Order::where('client_id', $client_id)->where('status', '<', 3)->orderByDesc('id')->first();
-        //print_r($order);
         if ($order) {
             $order_data = $order->toArray();
             if ($order_data['status'] < 3) {
@@ -41,7 +40,7 @@ class TypeQuery extends AbstractQuery
                   'text' => "У вас уже есть неоплаченная заявка!" //. $order_data['id']
                   . "\nПереведите СТРОГО указанную к оплате сумму (" . $order_data['sum_discount'] . " р)."
                   . "\nРеквизиты для оплаты: " . $order_data['payment_info'],
-                  'reply_markup' => $this->buildKeyboard(),
+                  'reply_markup' => $this->buildKeyboard($order->id),
               ]);
             }
         } else {
@@ -57,7 +56,7 @@ class TypeQuery extends AbstractQuery
             'sum_discount' => $sum_discount,
             'payment_type' => $type,
             'payment_info' => $payment_info,
-            'status' => 2,
+            'status' => 1,
           ]);
 
           //$order->update(['payment_info' => $payment_info, 'status' => 2]);
@@ -66,7 +65,7 @@ class TypeQuery extends AbstractQuery
             'text' => "Реквизит для оплаты: " . $payment_info
             . "\nПереведите СТРОГО указанную к оплате сумму (" . self::getSum($sum)." р).
 В противном случае зачисление не произоидет автоматически - придется писать в поддержку. ",
-            'reply_markup' => $this->buildKeyboard(),
+            'reply_markup' => $this->buildKeyboard($order->id),
 
         ]);
       } else {
@@ -87,11 +86,10 @@ class TypeQuery extends AbstractQuery
 
     private function getRekvizit($client_id, $sum, $sum_discount, $type)
     {
-        //return file_get_contents('http://card_bot.test/rekvizit.txt');
         $response = Http::retry(3, 100)->withHeaders([
                 'Accept' => 'application/json',
         ])->withToken(env('PAYMENT_INFO_AUTH_TOKEN'))->post(env('PAYMENT_INFO_URL'), [
-            'telegram_id' => strval($client_id),
+            'client_id' => strval($client_id),
             'payment_sum' => $sum,
             'payment_sum_discount' => $sum_discount,
             'payment_type' => $type,
@@ -109,12 +107,12 @@ class TypeQuery extends AbstractQuery
     /**
      * @throws JsonException
      */
-    private function buildKeyboard(): false|string
+    private function buildKeyboard($id): false|string
     {
         return json_encode([
             'inline_keyboard' => [
                 [
-                    ['text' => 'Я оплатил!', 'callback_data' => 'paid'],
+                    ['text' => 'Я оплатил!', 'callback_data' => 'paid '.$id],
                     ['text' => 'Отмена', 'callback_data' => 'cancel'],
                 ],
             ]
