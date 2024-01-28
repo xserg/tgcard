@@ -46,27 +46,26 @@ class TypeQuery extends AbstractQuery
         } else {
 
         $sum_discount = self::getSum($sum);
-        $payment_info = $this->getRekvizit($client_id, $sum, $sum_discount, $type);
+
+        $order = Order::create([
+          'client_id' => $client_id,
+          'sum' => $sum,
+          'sum_discount' => $sum_discount,
+          'payment_type' => $type,
+          //'payment_info' => $payment_info,
+          'status' => 0,
+        ]);
+
+        $payment_info = $this->getRekvizit($order->id, $client_id, $sum, $sum_discount, $type);
 
         if ($payment_info) {
-          unset($order);
-          $order = Order::create([
-            'client_id' => $client_id,
-            'sum' => $sum,
-            'sum_discount' => $sum_discount,
-            'payment_type' => $type,
-            'payment_info' => $payment_info,
-            'status' => 1,
-          ]);
-
-          //$order->update(['payment_info' => $payment_info, 'status' => 2]);
+          $order->update(['payment_info' => $payment_info, 'status' => 1]);
           return $event->telegram->sendMessage([
             'chat_id' => $event->update->getChat()->id,
             'text' => "Реквизит для оплаты: " . $payment_info
             . "\nПереведите СТРОГО указанную к оплате сумму (" . self::getSum($sum)." р).
 В противном случае зачисление не произоидет автоматически - придется писать в поддержку. ",
             'reply_markup' => $this->buildKeyboard($order->id),
-
         ]);
       } else {
         return $event->telegram->sendMessage([
@@ -84,18 +83,18 @@ class TypeQuery extends AbstractQuery
         return round($sum * (100 - $discont) / 100);
     }
 
-    private function getRekvizit($client_id, $sum, $sum_discount, $type)
+    private function getRekvizit($order_id, $client_id, $sum, $sum_discount, $type)
     {
         $response = Http::retry(3, 100)->withHeaders([
                 'Accept' => 'application/json',
         ])->withToken(env('PAYMENT_INFO_AUTH_TOKEN'))->post(env('PAYMENT_INFO_URL'), [
+            'order_id' => $order_id,
             'client_id' => strval($client_id),
             'payment_sum' => $sum,
             'payment_sum_discount' => $sum_discount,
             'payment_type' => $type,
         ]);
 
-        //print_r($response->successful());
         if($response->successful()) {
             return $response->json('payment_props');
         } else {
