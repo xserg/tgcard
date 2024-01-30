@@ -40,7 +40,14 @@ class OrderCrudController extends CrudController
     protected function setupListOperation()
     {
         CRUD::column('id')->type('string');
-        CRUD::setFromDb(); // set columns from db columns.
+        //CRUD::setFromDb(); // set columns from db columns.
+        CRUD::column('client_id');
+        CRUD::column('sum');
+        CRUD::column('sum_discount');
+        CRUD::column('payment_info');
+        CRUD::column('status');
+
+        CRUD::column('created_at');
         CRUD::denyAccess('create'); // set columns from db columns.
         CRUD::denyAccess('update');
         /**
