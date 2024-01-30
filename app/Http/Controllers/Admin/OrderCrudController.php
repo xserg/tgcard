@@ -42,7 +42,7 @@ class OrderCrudController extends CrudController
         CRUD::column('id')->type('string');
         CRUD::setFromDb(); // set columns from db columns.
         CRUD::denyAccess('create'); // set columns from db columns.
-
+        CRUD::denyAccess('update');
         /**
          * Columns can be defined using the fluent syntax:
          * - CRUD::column('price')->type('number');
