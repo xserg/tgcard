@@ -39,8 +39,10 @@ class SettingCrudController extends CrudController
      */
     protected function setupListOperation()
     {
-        CRUD::setFromDb(); // set columns from db columns.
-
+        //CRUD::setFromDb(); // set columns from db columns.
+        CRUD::column('discount')->type('number')->label('Discount %');
+        CRUD::column('timeout')->type('number')->label('Timeout Hours');
+        CRUD::denyAccess('delete');
         /**
          * Columns can be defined using the fluent syntax:
          * - CRUD::column('price')->type('number');
@@ -57,7 +59,8 @@ class SettingCrudController extends CrudController
     {
         //CRUD::setValidation(SettingRequest::class);
         CRUD::setFromDb(); // set fields from db columns.
-        CRUD::field('discount')->type('number');
+        CRUD::field('discount')->type('number')->label('Discount %');
+        CRUD::field('timeout')->type('number')->label('Timeout Hours');
         /**
          * Fields can be defined using the fluent syntax:
          * - CRUD::field('price')->type('number');
@@ -72,6 +75,7 @@ class SettingCrudController extends CrudController
      */
     protected function setupUpdateOperation()
     {
+        $this->setupListOperation();
         $this->setupCreateOperation();
     }
 }
