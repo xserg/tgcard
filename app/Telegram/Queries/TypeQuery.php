@@ -6,6 +6,7 @@ use Telegram\Bot\Events\UpdateEvent;
 use Telegram\Bot\Exceptions\TelegramSDKException;
 use Telegram\Bot\Objects\Message;
 use App\Models\Order;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Http;
 
 class TypeQuery extends AbstractQuery
@@ -79,7 +80,8 @@ class TypeQuery extends AbstractQuery
 
     private function getSum($sum)
     {
-        $discont = 5;
+        $settings = Setting::first();
+        $discont = $settings->discount ?? 5;
         return round($sum * (100 - $discont) / 100);
     }
 
